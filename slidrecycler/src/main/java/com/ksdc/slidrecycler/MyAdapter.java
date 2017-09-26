@@ -6,7 +6,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,9 +16,7 @@ import java.util.List;
  * created by yhao on 2017/8/18.
  */
 
-
 class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
-
 
     private List<String> mData;
     private Context mContext;
@@ -53,32 +50,31 @@ class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new MyViewHolder(LayoutInflater.from(mContext).inflate(R.layout.item, parent, false));
+        return new MyViewHolder(LayoutInflater.from(mContext).inflate(R.layout.item, parent,
+                false));
     }
 
     @Override
-    public void onBindViewHolder(final MyViewHolder holder, @SuppressLint("RecyclerView") final int position) {
-        holder.imageView.setImageResource(R.mipmap.catton);
-        holder.menuText.setText(mData.get(position));
+    public void onBindViewHolder(final MyViewHolder holder, @SuppressLint("RecyclerView") final
+    int position) {
+        holder.tvPoint.setText(position + "");
+//        if (holder.slidingMenu.isOpen) {
+//            //如果是打开的，显示删除view
+//            holder.menuText.setVisibility(View.VISIBLE);
+            holder.menuText.setText(mData.get(position));
+//        }else{
+//            holder.menuText.setVisibility(View.INVISIBLE);
+//        }
         holder.menuText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 closeOpenMenu();
-//                boolean top;
-//                if (holder.menuText.getText().toString().equals("删除")) {
-//                    holder.menuText.setText("已删除");
-//                    holder.imageView.setImageResource(R.mipmap.panda);
-//                    top = true;
-//                } else {
-//                    holder.menuText.setText("删除");
-//                    holder.imageView.setImageResource(R.mipmap.catton);
-//                    top = false;
-//                }
+                mData.remove(position);
+                notifyDataSetChanged();
 //                if (mOnClickListener != null) {
-//                    mOnClickListener.onMenuClick(position,top);
+//                    mOnClickListener.onMenuClick(position);
 //                }
-                Toast.makeText(mContext,"删除"+position,Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, "删除" + position, Toast.LENGTH_SHORT).show();
             }
         });
         holder.slidingMenu.setCustomOnClickListener(new SlidingMenu.CustomOnClickListener() {
@@ -89,11 +85,9 @@ class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
                 }
             }
         });
-
     }
 
     interface OnClickListener {
-        void onMenuClick(int position,boolean top);
 
         void onContentClick(int position);
     }
@@ -104,7 +98,6 @@ class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         this.mOnClickListener = onClickListener;
     }
 
-
     @Override
     public int getItemCount() {
         return mData.size();
@@ -112,18 +105,16 @@ class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
     class MyViewHolder extends RecyclerView.ViewHolder {
         TextView menuText;
-        ImageView imageView;
+        TextView tvPoint;
         LinearLayout content;
         SlidingMenu slidingMenu;
-
 
         MyViewHolder(View itemView) {
             super(itemView);
             menuText = (TextView) itemView.findViewById(R.id.menuText);
-            imageView = (ImageView) itemView.findViewById(R.id.imageView);
+            tvPoint = (TextView) itemView.findViewById(R.id.tv_point);
             content = (LinearLayout) itemView.findViewById(R.id.content);
             slidingMenu = (SlidingMenu) itemView.findViewById(R.id.slidingMenu);
         }
     }
-
 }

@@ -1,7 +1,7 @@
 package com.ksdc.slidrecycler;
 
 /**
- * created by yhao on 2017/8/11.
+ * 这是滑动删除的自定义控件
  */
 
 import android.content.Context;
@@ -23,7 +23,7 @@ public class SlidingMenu extends HorizontalScrollView {
 
 
     private boolean once = true;
-    private boolean isOpen;
+    public boolean isOpen;
 
     public SlidingMenu(final Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -102,7 +102,9 @@ public class SlidingMenu extends HorizontalScrollView {
         //测量子view宽的比例，重新赋值
         if (once) {
             LinearLayout wrapper = (LinearLayout) getChildAt(0);
+            //内容的view宽
             wrapper.getChildAt(0).getLayoutParams().width = mScreenWidth;
+            //侧滑的view宽
             wrapper.getChildAt(1).getLayoutParams().width = mMenuWidth;
             once = false;
         }
@@ -131,8 +133,8 @@ public class SlidingMenu extends HorizontalScrollView {
                 }
                 if (Math.abs(scrollX) > mMenuWidth / 2) {
                     //滑动最多不会超过menu的宽度
-                    this.smoothScrollTo(mMenuWidth, 0);
                     onOpenMenu();
+                    this.smoothScrollTo(mMenuWidth, 0);
                 } else {
                     this.smoothScrollTo(0, 0);
                 }

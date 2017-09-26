@@ -5,7 +5,7 @@ import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
 /**
- * created by yhao on 2017/8/18.
+ * 获取屏幕的像素宽
  */
 
 

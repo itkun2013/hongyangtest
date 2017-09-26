@@ -10,7 +10,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-
+    //recylerview控件
     private RecyclerView mRecyclerView;
 
     @Override
@@ -28,14 +28,14 @@ public class MainActivity extends AppCompatActivity {
         }
         final MyAdapter myAdapter = new MyAdapter(data, this);
         myAdapter.setOnClickListener(new MyAdapter.OnClickListener() {
-            @Override
-            public void onMenuClick(int position,boolean top) {
-//                data.remove(mData.get(position));
-//                notifyDataSetChanged();
-//                data.set(position, top ? "已删除" : "删除");
-//                data.remove(position);
+//            @Override
+//            public void onMenuClick(int position) {
+//                data.remove(data.get(position));
 //                myAdapter.notifyDataSetChanged();
-            }
+////                data.set(position, top ? "已删除" : "删除");
+////                data.remove(position);
+////                myAdapter.notifyDataSetChanged();
+//            }
 
             @Override
             public void onContentClick(int position) {
