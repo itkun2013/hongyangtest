@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -23,12 +24,15 @@ public class EcgWaveform extends SurfaceView implements SurfaceHolder.Callback {
     private int centerY;
     private int ecgPerCount = 50; // 每次画心电数据的个数，心电每秒有500个数据包
     private float waveSpeed;
-//    private Rect rect;
+    private Rect rect;
     private float ecgXOffset = 0; // 每次X坐标偏移的像素
     private int sleepTime = 100; // 每次锁屏的时间间距，单位ms
     private float lockWidth; // 每次锁屏需要画的宽度，单位像素
     private int blankLineWidth = 0; // 右侧缺口的宽度，单位像素
     private int waveWidgetHeight;
+    private Paint wavePaint;
+    private float startX = 0;
+    private float stopY = 0;
 
     /**
      * 这个是new对象出来
@@ -89,6 +93,7 @@ public class EcgWaveform extends SurfaceView implements SurfaceHolder.Callback {
         new Thread(drawRunnable).start();
     }
 
+    int count = 1;
     //波形子线程
     public Runnable drawRunnable = new Runnable() {
         @Override
@@ -104,6 +109,7 @@ public class EcgWaveform extends SurfaceView implements SurfaceHolder.Callback {
                 long endTime = System.currentTimeMillis();
                 if (endTime - startTime < sleepTime) {
                     try {
+                        count++;
                         Thread.sleep(sleepTime - (endTime - startTime));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -123,13 +129,19 @@ public class EcgWaveform extends SurfaceView implements SurfaceHolder.Callback {
         waveWidgetHeight = getHeight() / 3;
 
         // 初始化矩形波形绘制区域
-//        rect = new Rect();
+        rect = new Rect();
         // 初始化其他波形绘制相关的参数
         waveSpeed = getWaveSpeedConfig();
         pxPerSecond = waveSpeed * pxPerMm; // 计算每秒画多少像素
         lockWidth = pxPerSecond * (sleepTime / 1000f); // 每次锁屏所需画的宽度
         ecgXOffset = lockWidth / ecgPerCount;
         blankLineWidth = 20;
+        //波形画笔
+        //波形画笔颜色
+        wavePaint = new Paint();
+        wavePaint.setStrokeWidth(2);
+        wavePaint.setColor(Color.parseColor("#7CFC00"));
+        wavePaint.setAntiAlias(true); // 设置抗锯齿
     }
 
     /**
@@ -161,19 +173,21 @@ public class EcgWaveform extends SurfaceView implements SurfaceHolder.Callback {
      * 绘制波形
      */
     private void drawWave() {
-        //波形画笔颜色
-        Paint wavePaint = new Paint();
-        wavePaint.setStrokeWidth(2);
-        wavePaint.setColor(Color.parseColor("#7CFC00"));
-        wavePaint.setAntiAlias(true); // 设置抗锯齿
-//        rect.set(0, 0, (int) (0 + lockWidth + blankLineWidth),
-//                waveWidgetHeight * 3);// 3宽度倍数
+
+        rect.set(0, 0, (int) (0 + lockWidth + blankLineWidth),
+                waveWidgetHeight * 3);// 3宽度倍数
         Canvas canvas = surfaceHolder.lockCanvas();
 
         for (int i = 0; i < ecgPerCount; i++) {
-
-            canvas.drawLine(0, centerY,Math.round( ecgXOffset * (i + 1)),centerY,wavePaint);
+            stopY = count * ecgXOffset * (i + 1);
+            ;
+            canvas.drawLine(startX, centerY, stopY, centerY, wavePaint);
+            startX = stopY;
+            if (i == ecgPerCount - 1) {
+                startX = ecgXOffset * (i + 1);
+            }
         }
+
         surfaceHolder.unlockCanvasAndPost(canvas);
     }
 
