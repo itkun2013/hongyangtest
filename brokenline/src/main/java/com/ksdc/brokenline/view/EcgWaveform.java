@@ -3,9 +3,15 @@ package com.ksdc.brokenline.view;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -51,6 +57,7 @@ public class EcgWaveform extends SurfaceView implements SurfaceHolder.Callback {
         super(context, attrs);
         //设置Windows上面
         setZOrderOnTop(true);
+        getHolder().setFormat(PixelFormat.TRANSLUCENT);
         //设置回调
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
@@ -64,25 +71,44 @@ public class EcgWaveform extends SurfaceView implements SurfaceHolder.Callback {
         int height = getHeight();
         //在控件中间画波形
         centerY = height / 2;
-
+        DrawBackground();
         //开始画波形
-        startDraw();
+        startDrawWave();
     }
 
-    /**
-     * 开启绘制任务
-     */
-    private void startDraw() {
-        //开启画背景
-        new Thread(new Runnable() {
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        stopDrawWave();
+    }
+
+    private void DrawBackground() {
+        final int width = getWidth();
+        final int height = getHeight();
+
+        final Drawable drawable = new Drawable() {
             @Override
-            public void run() {
+            public void draw(@NonNull Canvas canvas) {
+                canvas.drawColor(Color.BLACK);
+                drawEcgGrid(canvas);
 
-                drawEcgGrid();
             }
-        });
-
-        startDrawWave();
+            @Override
+            public void setAlpha(int alpha) {
+            }
+            @Override
+            public void setColorFilter(ColorFilter cf) {
+            }
+            @Override
+            public int getOpacity() {
+                return PixelFormat.UNKNOWN;
+            }
+        };
+        this.setBackground(drawable);
     }
 
     /**
@@ -100,11 +126,7 @@ public class EcgWaveform extends SurfaceView implements SurfaceHolder.Callback {
         public void run() {
             while (isRunning) {
                 long startTime = System.currentTimeMillis();
-
-//                if(ecg0Data.size() > ecgPerCount) {
                 drawWave();
-//                }
-//                adjustPerCount();
 
                 long endTime = System.currentTimeMillis();
                 if (endTime - startTime < sleepTime) {
@@ -150,55 +172,32 @@ public class EcgWaveform extends SurfaceView implements SurfaceHolder.Callback {
      */
     private float getWaveSpeedConfig() {
         return 5f;
-//        float speed = SpUtils.getSpFloat(getContext(), GlobalConstant.SYS_CONFIG, "mm", 1.0f);
-//
-//        if (speed == 0.2f) {
-//            return 5f;
-//        } else if (speed == 0.25f) {
-//            return 6.25f;
-//        } else if (speed == 0.4f) {
-//            return 10f;
-//        } else if (speed == 0.5f) {
-//            return 12.5f;
-//        } else if (speed == 1.0f) {
-//            return 25f;
-//        } else if (speed == 2.0f) {
-//            return 50f;
-//        } else {
-//            return 25f;
-//        }
     }
 
     /**
      * 绘制波形
      */
     private void drawWave() {
-
-        rect.set(0, 0, (int) (0 + lockWidth + blankLineWidth),
-                waveWidgetHeight * 3);// 3宽度倍数
-        Canvas canvas = surfaceHolder.lockCanvas();
-
+        //设置画布的绘制区域
+        rect.set(0, 0, getWidth() - blankLineWidth, getHeight());// 3宽度倍数
+        Canvas canvas = surfaceHolder.lockCanvas(rect);
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         for (int i = 0; i < ecgPerCount; i++) {
             stopY = count * ecgXOffset * (i + 1);
-            ;
             canvas.drawLine(startX, centerY, stopY, centerY, wavePaint);
             startX = stopY;
             if (i == ecgPerCount - 1) {
                 startX = ecgXOffset * (i + 1);
             }
+
         }
+        if (startX == 757.4041) {
 
+            startX = 0;
+            count = 1;
+            wavePaint.setColor(Color.RED);
+        }
         surfaceHolder.unlockCanvasAndPost(canvas);
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        stopDrawWave();
     }
 
     /**
@@ -210,13 +209,14 @@ public class EcgWaveform extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * 画心电测量界面的网格
+     * @param canvas
      */
-    private void drawEcgGrid() {
-        //得到画布对象
-        Canvas canvas = surfaceHolder.lockCanvas();
+    private void drawEcgGrid(Canvas canvas) {
+        Log.e("kkk","drawEcgGrid@@@@@@@@@@@@@@@@@");
+        //得到画布对
         // 设置画笔
         Paint paint = new Paint();
-        paint.setColor(getResources().getColor(R.color.white));
+        paint.setColor(getResources().getColor(R.color.tab_color));
         paint.setTextSize(14);
         paint.setAlpha(150);
         paint.setAntiAlias(true);
